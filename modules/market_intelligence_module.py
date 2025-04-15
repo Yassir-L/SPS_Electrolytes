@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-import os
 from modules.data_loader import load_data, save_data
 
-EXCEL_PATH = os.path.join("data", "LiPF6_data.xlsx")
+EXCEL_FILE = "LiPF6_data.xlsx"
 KPI_SHEET = "External_KPIs"
 
 KPI_FIELDS = [
@@ -15,7 +14,7 @@ KPI_FIELDS = [
 
 def load_external_kpis():
     try:
-        df = load_data(KPI_SHEET)
+        df = load_data(KPI_SHEET, file_name=EXCEL_FILE)
         return df.set_index("KPI Name").to_dict("index"), df
     except:
         empty = pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
@@ -24,14 +23,14 @@ def load_external_kpis():
 def save_external_kpis(data_dict):
     try:
         new_df = pd.DataFrame.from_dict(data_dict, orient="index").reset_index().rename(columns={"index": "KPI Name"})
-        save_data(new_df, KPI_SHEET)
+        save_data(new_df, KPI_SHEET, file_name=EXCEL_FILE)
     except Exception as e:
         st.error(f"❌ Failed to save KPI data: {e}")
 
 def clear_kpi_sheet():
     try:
         empty_df = pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
-        save_data(empty_df, KPI_SHEET)
+        save_data(empty_df, KPI_SHEET, file_name=EXCEL_FILE)
         st.success("🧹 Sheet cleared successfully.")
     except Exception as e:
         st.error(f"❌ Failed to clear the sheet: {e}")
@@ -71,7 +70,7 @@ def show():
 
     if st.button("💾 Save Table Changes"):
         try:
-            save_data(edited_df, KPI_SHEET)
+            save_data(edited_df, KPI_SHEET, file_name=EXCEL_FILE)
             st.success("✅ Changes saved successfully.")
             st.rerun()
         except Exception as e:
