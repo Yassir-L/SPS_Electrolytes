@@ -34,28 +34,31 @@ def save_external_kpis(data_dict):
     except Exception as e:
         st.error(f"Failed to save external KPIs: {e}")
 
-stored_data = load_external_kpis()
-updated_data = {}
+def show():
+    st.header("📈 Global LiPF₆ Market Intelligence")
 
-st.subheader("🔢 Input External KPIs")
-for kpi in KPI_FIELDS:
-    st.markdown(f"### {kpi}")
-    val = st.number_input(f"Value for {kpi}", value=float(stored_data.get(kpi, {}).get("Value", 0)), step=1.0, key=f"val_{kpi}")
-    ref = st.text_input(f"Reference(s) for {kpi} (use | to separate multiple)", value=stored_data.get(kpi, {}).get("Reference(s)", ""), key=f"ref_{kpi}")
-    comment = st.text_area(f"Comment for {kpi}", value=stored_data.get(kpi, {}).get("Comment", ""), key=f"comment_{kpi}")
+    stored_data = load_external_kpis()
+    updated_data = {}
 
-    updated_data[kpi] = {
-        "Value": val,
-        "Reference(s)": ref,
-        "Comment": comment
-    }
+    st.subheader("🧮 Input External KPIs")
+    for kpi in KPI_FIELDS:
+        st.markdown(f"### {kpi}")
+        val = st.number_input(f"Value for {kpi}", value=float(stored_data.get(kpi, {}).get("Value", 0)), step=1.0, key=f"val_{kpi}")
+        ref = st.text_input(f"Reference(s) for {kpi} (use | to separate multiple)", value=stored_data.get(kpi, {}).get("Reference(s)", ""), key=f"ref_{kpi}")
+        comment = st.text_area(f"Comment for {kpi}", value=stored_data.get(kpi, {}).get("Comment", ""), key=f"comment_{kpi}")
 
-    # Store in session for analytics module
-    st.session_state[f"mi_{kpi}"] = val
+        updated_data[kpi] = {
+            "Value": val,
+            "Reference(s)": ref,
+            "Comment": comment
+        }
 
-if st.button("🔖 Save External KPI Data"):
-    save_external_kpis(updated_data)
-    st.success("Saved successfully.")
+        # Store in session state for Analytics use
+        st.session_state[f"mi_{kpi}"] = val
 
-st.markdown("---")
-st.info("These values will be used for comparison in the Analytics Dashboard.")
+    if st.button("🔐 Save External KPI Data"):
+        save_external_kpis(updated_data)
+        st.success("✅ Saved successfully.")
+
+    st.markdown("---")
+    st.info("These values will be used for comparison in the Analytics Dashboard.")
