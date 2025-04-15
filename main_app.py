@@ -31,4 +31,4 @@ elif page == "Market Intelligence":
 elif page == "💡 Suggestions":
     show_ideas()
 
-st.sidebar.markdown("🆕 Version: Apr 15 Update")
+st.sidebar.markdown("🆕 Version: Apr 16 Update")
