@@ -1,21 +1,18 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
 import os
 from modules.data_loader import load_data
 
 EXCEL_PATH = os.path.join("data", "LiPF6_Market_Intelligence.xlsx")
 KPI_SHEET = "Market Intelligence"
-PATENT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Patents")
 
-# Load external KPIs directly from Market Intelligence file
 @st.cache_data
-def load_external_kpis_df():
+def load_external_kpis_dict():
     try:
         df = pd.read_excel(EXCEL_PATH, sheet_name=KPI_SHEET)
-        return df
+        return df.set_index("KPI Name").to_dict("index")
     except:
-        return pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
+        return {}
 
 def get_internal_kpis(companies_df):
     return {
@@ -30,40 +27,30 @@ def show():
 
     companies_df = load_data("Companies")
     internal_kpis = get_internal_kpis(companies_df)
-    external_kpis_df = load_external_kpis_df()
+    external_kpis_dict = load_external_kpis_dict()
 
-    st.subheader("📌 KPI Comparison")
+    st.subheader("📌 KPI Comparison (Internal vs. External)")
 
-    # Format table with attainment %
-    comparison_rows = []
     for kpi_name, internal_val in internal_kpis.items():
-        # Match row from external sheet
-        external_row = external_kpis_df[external_kpis_df["KPI Name"] == kpi_name]
-        if not external_row.empty:
-            external_val = float(external_row["Value"].values[0])
-            reference = external_row["Reference(s)"].values[0]
-            comment = external_row["Comment"].values[0]
-            attainment = (internal_val / external_val * 100) if external_val else 0
-        else:
-            external_val = 0
-            reference = ""
-            comment = ""
-            attainment = 0
+        internal_val = round(internal_val, 2)
+        external_val = round(float(external_kpis_dict.get(kpi_name, {}).get("Value", 0)), 2)
+        attainment = round((internal_val / external_val * 100), 1) if external_val else 0
 
-        comparison_rows.append({
-            "KPI Name": kpi_name,
-            "Internal Value": round(internal_val, 2),
-            "External Value": round(external_val, 2),
-            "🎯 Attainment (%)": round(attainment, 1),
-            "Reference(s)": reference,
-            "Comment": comment
-        })
-
-    st.dataframe(pd.DataFrame(comparison_rows), use_container_width=True)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric(label=f"📦 {kpi_name} (Internal)", value=internal_val)
+        with col2:
+            st.metric(label=f"🌐 {kpi_name} (External)", value=external_val)
+        with col3:
+            st.metric(label=f"🎯 Attainment (%)", value=f"{attainment}%")
 
     st.markdown("---")
 
     st.subheader("📚 Patents per Company (Pareto Chart)")
+
+    import plotly.graph_objects as go
+
+    PATENT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Patents")
 
     search_keywords = st.text_input("🔎 Filter patents by keyword (comma separated):")
     keywords = [kw.strip().lower() for kw in search_keywords.split(",") if kw.strip()] if search_keywords else []
