@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
 import os
 
-EXCEL_PATH = os.path.join("data", "LiPF6_data.xlsx")
-EXTERNAL_KPI_SHEET = "External_KPIs"
+EXCEL_PATH = os.path.join("data", "LiPF6_Market_Intelligence.xlsx")
+KPI_SHEET = "Market Intelligence"
 
 KPI_FIELDS = [
     "Total Companies",
@@ -13,40 +12,40 @@ KPI_FIELDS = [
     "Industrial Scale Projects"
 ]
 
-st.header("📈 Global LiPF₆ Market Intelligence")
-
-# Load or create External KPI sheet
 def load_external_kpis():
     try:
-        df = pd.read_excel(EXCEL_PATH, sheet_name=EXTERNAL_KPI_SHEET)
+        df = pd.read_excel(EXCEL_PATH, sheet_name=KPI_SHEET)
         return df.set_index("KPI Name").to_dict("index")
     except:
         return {}
 
 def save_external_kpis(data_dict):
     try:
-        import openpyxl
-        from openpyxl import load_workbook
-
-        # Load all existing sheets from the file
-        book = load_workbook(EXCEL_PATH)
         new_df = pd.DataFrame.from_dict(data_dict, orient="index").reset_index().rename(columns={"index": "KPI Name"})
-
-        # Use pandas with mode='a' to append and replace the specific sheet
         with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
-            new_df.to_excel(writer, sheet_name=EXTERNAL_KPI_SHEET, index=False)
-
+            new_df.to_excel(writer, sheet_name=KPI_SHEET, index=False)
     except FileNotFoundError:
-        # First-time save if file doesn't exist yet
         new_df = pd.DataFrame.from_dict(data_dict, orient="index").reset_index().rename(columns={"index": "KPI Name"})
         with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="w") as writer:
-            new_df.to_excel(writer, sheet_name=EXTERNAL_KPI_SHEET, index=False)
+            new_df.to_excel(writer, sheet_name=KPI_SHEET, index=False)
     except Exception as e:
-        st.error(f"❌ Failed to save external KPIs: {e}")
+        st.error(f"❌ Failed to save KPI data: {e}")
 
+def clear_kpi_sheet():
+    try:
+        # Replace the KPI sheet with an empty DataFrame with correct columns
+        empty_df = pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
+        with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+            empty_df.to_excel(writer, sheet_name=KPI_SHEET, index=False)
+        st.success("🧹 Sheet cleared successfully.")
+    except Exception as e:
+        st.error(f"❌ Failed to clear the sheet: {e}")
 
 def show():
     st.header("📈 Global LiPF₆ Market Intelligence")
+
+    if st.button("🧹 Clear All KPI Data (Warning: Cannot be undone)"):
+        clear_kpi_sheet()
 
     stored_data = load_external_kpis()
     updated_data = {}
@@ -64,7 +63,7 @@ def show():
             "Comment": comment
         }
 
-        # Store in session state for Analytics use
+        # Store in session state for use in Analytics module
         st.session_state[f"mi_{kpi}"] = val
 
     if st.button("🔐 Save External KPI Data"):
