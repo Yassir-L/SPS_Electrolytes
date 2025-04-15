@@ -25,14 +25,25 @@ def load_external_kpis():
 
 def save_external_kpis(data_dict):
     try:
-        all_sheets = pd.read_excel(EXCEL_PATH, sheet_name=None)
+        from openpyxl import load_workbook
+
+        # Load workbook and all sheets
+        book = load_workbook(EXCEL_PATH)
+        writer = pd.ExcelWriter(EXCEL_PATH, engine='openpyxl', mode='a', if_sheet_exists='replace')
+        writer.book = book
+
+        # Create new DataFrame
         new_df = pd.DataFrame.from_dict(data_dict, orient="index").reset_index().rename(columns={"index": "KPI Name"})
-        all_sheets[EXTERNAL_KPI_SHEET] = new_df
-        with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="w") as writer:
-            for name, sheet_df in all_sheets.items():
-                sheet_df.to_excel(writer, sheet_name=name, index=False)
+
+        # Write new or updated sheet
+        new_df.to_excel(writer, sheet_name=EXTERNAL_KPI_SHEET, index=False)
+
+        writer.save()
+        writer.close()
+
     except Exception as e:
         st.error(f"Failed to save external KPIs: {e}")
+
 
 def show():
     st.header("📈 Global LiPF₆ Market Intelligence")
