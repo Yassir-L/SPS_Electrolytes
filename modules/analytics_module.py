@@ -10,15 +10,11 @@ KPI_SHEET = "Market Intelligence"
 def load_external_kpis_dict():
     try:
         df = pd.read_excel(EXCEL_PATH, sheet_name=KPI_SHEET)
-        st.subheader("[DEBUG] Raw External KPI Data")
-        st.write(df)  # Debug raw DataFrame
         kpi_dict = df.set_index("KPI Name").to_dict("index")
-        st.subheader("[DEBUG] Parsed KPI Dictionary")
-        st.write(kpi_dict)  # Debug dictionary format
-        return kpi_dict
+        return kpi_dict, df
     except Exception as e:
         st.error(f"[DEBUG] Error loading external KPIs: {e}")
-        return {}
+        return {}, pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
 
 def get_internal_kpis(companies_df):
     return {
@@ -33,7 +29,7 @@ def show():
 
     companies_df = load_data("Companies")
     internal_kpis = get_internal_kpis(companies_df)
-    external_kpis_dict = load_external_kpis_dict()
+    external_kpis_dict, raw_external_df = load_external_kpis_dict()
 
     st.subheader("📌 KPI Comparison (Internal vs. External)")
 
@@ -49,6 +45,11 @@ def show():
             st.metric(label=f"🌐 {kpi_name} (External)", value=external_val)
         with col3:
             st.metric(label=f"🎯 Attainment (%)", value=f"{attainment}%")
+
+    st.markdown("---")
+
+    st.subheader("🔧 [DEBUG] Raw External KPI Data")
+    st.dataframe(raw_external_df, use_container_width=True)
 
     st.markdown("---")
 
