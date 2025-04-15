@@ -15,9 +15,10 @@ KPI_FIELDS = [
 def load_external_kpis():
     try:
         df = pd.read_excel(EXCEL_PATH, sheet_name=KPI_SHEET)
-        return df.set_index("KPI Name").to_dict("index")
+        return df.set_index("KPI Name").to_dict("index"), df
     except:
-        return {}
+        empty = pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
+        return {}, empty
 
 def save_external_kpis(data_dict):
     try:
@@ -33,7 +34,6 @@ def save_external_kpis(data_dict):
 
 def clear_kpi_sheet():
     try:
-        # Replace the KPI sheet with an empty DataFrame with correct columns
         empty_df = pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
         with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
             empty_df.to_excel(writer, sheet_name=KPI_SHEET, index=False)
@@ -47,7 +47,7 @@ def show():
     if st.button("🧹 Clear All KPI Data (Warning: Cannot be undone)"):
         clear_kpi_sheet()
 
-    stored_data = load_external_kpis()
+    stored_data, current_df = load_external_kpis()
     updated_data = {}
 
     st.subheader("🧮 Input External KPIs")
@@ -71,4 +71,15 @@ def show():
         st.success("✅ Saved successfully.")
 
     st.markdown("---")
-    st.info("These values will be used for comparison in the Analytics Dashboard.")
+
+    # 🔍 Raw Editable Table
+    st.subheader("📋 Edit KPI Data (Raw Table)")
+    edited_df = st.data_editor(current_df, num_rows="dynamic", use_container_width=True, key="editor")
+
+    if st.button("💾 Save Table Changes"):
+        try:
+            with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+                edited_df.to_excel(writer, sheet_name=KPI_SHEET, index=False)
+            st.success("✅ Changes saved successfully.")
+        except Exception as e:
+            st.error(f"❌ Failed to save table edits: {e}")
