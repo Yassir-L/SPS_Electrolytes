@@ -3,13 +3,12 @@ import pandas as pd
 import os
 from modules.data_loader import load_data
 
-EXCEL_PATH = os.path.join("data", "LiPF6_Market_Intelligence.xlsx")
 KPI_SHEET = "Market Intelligence"
 
 @st.cache_data
 def load_external_kpis_dict():
     try:
-        df = pd.read_excel(EXCEL_PATH, sheet_name=KPI_SHEET)
+        df = load_data(KPI_SHEET)
         kpi_dict = df.set_index("KPI Name").to_dict("index")
         return kpi_dict, df
     except Exception as e:
