@@ -25,24 +25,24 @@ def load_external_kpis():
 
 def save_external_kpis(data_dict):
     try:
+        import openpyxl
         from openpyxl import load_workbook
 
-        # Load workbook and all sheets
+        # Load all existing sheets from the file
         book = load_workbook(EXCEL_PATH)
-        writer = pd.ExcelWriter(EXCEL_PATH, engine='openpyxl', mode='a', if_sheet_exists='replace')
-        writer.book = book
-
-        # Create new DataFrame
         new_df = pd.DataFrame.from_dict(data_dict, orient="index").reset_index().rename(columns={"index": "KPI Name"})
 
-        # Write new or updated sheet
-        new_df.to_excel(writer, sheet_name=EXTERNAL_KPI_SHEET, index=False)
+        # Use pandas with mode='a' to append and replace the specific sheet
+        with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+            new_df.to_excel(writer, sheet_name=EXTERNAL_KPIS_SHEET, index=False)
 
-        writer.save()
-        writer.close()
-
+    except FileNotFoundError:
+        # First-time save if file doesn't exist yet
+        new_df = pd.DataFrame.from_dict(data_dict, orient="index").reset_index().rename(columns={"index": "KPI Name"})
+        with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="w") as writer:
+            new_df.to_excel(writer, sheet_name=EXTERNAL_KPIS_SHEET, index=False)
     except Exception as e:
-        st.error(f"Failed to save external KPIs: {e}")
+        st.error(f"❌ Failed to save external KPIs: {e}")
 
 
 def show():
