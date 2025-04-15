@@ -4,17 +4,18 @@ import plotly.graph_objects as go
 import os
 from modules.data_loader import load_data
 
+EXCEL_PATH = os.path.join("data", "LiPF6_Market_Intelligence.xlsx")
+KPI_SHEET = "Market Intelligence"
 PATENT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Patents")
 
-
+# Load external KPIs directly from Market Intelligence file
 @st.cache_data
-def load_external_kpis():
-    return {
-        "Total Companies": st.session_state.get("mi_Total Companies", 0),
-        "Total Current Capacity (t/year)": st.session_state.get("mi_Total Current Capacity (t/year)", 0),
-        "Average Capacity per Company": st.session_state.get("mi_Average Capacity per Company", 0),
-        "Industrial Scale Projects": st.session_state.get("mi_Industrial Scale Projects", 0)
-    }
+def load_external_kpis_df():
+    try:
+        df = pd.read_excel(EXCEL_PATH, sheet_name=KPI_SHEET)
+        return df
+    except:
+        return pd.DataFrame(columns=["KPI Name", "Value", "Reference(s)", "Comment"])
 
 def get_internal_kpis(companies_df):
     return {
@@ -29,23 +30,36 @@ def show():
 
     companies_df = load_data("Companies")
     internal_kpis = get_internal_kpis(companies_df)
+    external_kpis_df = load_external_kpis_df()
 
     st.subheader("📌 KPI Comparison")
 
-    external_kpis = load_external_kpis()
-    attainment_kpis = {}
+    # Format table with attainment %
+    comparison_rows = []
+    for kpi_name, internal_val in internal_kpis.items():
+        # Match row from external sheet
+        external_row = external_kpis_df[external_kpis_df["KPI Name"] == kpi_name]
+        if not external_row.empty:
+            external_val = float(external_row["Value"].values[0])
+            reference = external_row["Reference(s)"].values[0]
+            comment = external_row["Comment"].values[0]
+            attainment = (internal_val / external_val * 100) if external_val else 0
+        else:
+            external_val = 0
+            reference = ""
+            comment = ""
+            attainment = 0
 
-    for kpi in internal_kpis:
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            st.metric(label=f"Internal: {kpi}", value=f"{internal_kpis[kpi]:,.0f}")
-        with col2:
-            ext_value = external_kpis.get(kpi, 0)
-            st.metric(label=f"External: {kpi}", value=f"{ext_value:,.0f}")
-            if ext_value > 0:
-                attainment = (internal_kpis[kpi] / ext_value) * 100
-                attainment_kpis[kpi] = attainment
-                st.caption(f"🎯 Attainment: {attainment:.1f}%")
+        comparison_rows.append({
+            "KPI Name": kpi_name,
+            "Internal Value": round(internal_val, 2),
+            "External Value": round(external_val, 2),
+            "🎯 Attainment (%)": round(attainment, 1),
+            "Reference(s)": reference,
+            "Comment": comment
+        })
+
+    st.dataframe(pd.DataFrame(comparison_rows), use_container_width=True)
 
     st.markdown("---")
 
