@@ -9,7 +9,13 @@ KPI_SHEET = "External_KPIs"
 def load_external_kpis_dict():
     try:
         df = load_data(KPI_SHEET)
+        df["KPI Name"] = df["KPI Name"].astype(str).str.strip()  # Clean leading/trailing spaces
+        df = df.dropna(subset=["KPI Name"])  # Drop rows without a KPI Name
         kpi_dict = df.set_index("KPI Name").to_dict("index")
+
+        st.subheader("🛠️ [DEBUG] External KPI Dictionary Keys")
+        st.write(list(kpi_dict.keys()))
+
         return kpi_dict, df
     except Exception as e:
         st.error(f"[DEBUG] Error loading external KPIs: {e}")
