@@ -1,14 +1,16 @@
 import streamlit as st
 import pandas as pd
 import os
+import plotly.graph_objects as go
 from modules.data_loader import load_data
 
+EXCEL_FILE = "LiPF6_data.xlsx"
 KPI_SHEET = "External_KPIs"
+PATENT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Patents")
 
-@st.cache_data
 def load_external_kpis_dict():
     try:
-        df = load_data(KPI_SHEET)
+        df = load_data(KPI_SHEET, file_name=EXCEL_FILE)
         kpi_dict = df.set_index("KPI Name").to_dict("index")
         return kpi_dict, df
     except Exception as e:
@@ -26,7 +28,7 @@ def get_internal_kpis(companies_df):
 def show():
     st.header("📊 Analytics Dashboard")
 
-    companies_df = load_data("Companies")
+    companies_df = load_data("Companies", file_name=EXCEL_FILE)
     internal_kpis = get_internal_kpis(companies_df)
     external_kpis_dict, raw_external_df = load_external_kpis_dict()
 
@@ -47,16 +49,7 @@ def show():
 
     st.markdown("---")
 
-    st.subheader("🔧 [DEBUG] Raw External KPI Data")
-    st.dataframe(raw_external_df, use_container_width=True)
-
-    st.markdown("---")
-
     st.subheader("📚 Patents per Company (Pareto Chart)")
-
-    import plotly.graph_objects as go
-
-    PATENT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Patents")
 
     search_keywords = st.text_input("🔎 Filter patents by keyword (comma separated):")
     keywords = [kw.strip().lower() for kw in search_keywords.split(",") if kw.strip()] if search_keywords else []
