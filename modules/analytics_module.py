@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from modules.data_loader import load_data
 
-KPI_SHEET = "Market Intelligence"
+KPI_SHEET = "External_KPIs"
 
 @st.cache_data
 def load_external_kpis_dict():
