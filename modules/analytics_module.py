@@ -7,6 +7,15 @@ from modules.data_loader import load_data
 PATENT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Patents")
 
 
+@st.cache_data
+def load_external_kpis():
+    return {
+        "Total Companies": st.session_state.get("mi_Total Companies", 0),
+        "Total Current Capacity (t/year)": st.session_state.get("mi_Total Current Capacity (t/year)", 0),
+        "Average Capacity per Company": st.session_state.get("mi_Average Capacity per Company", 0),
+        "Industrial Scale Projects": st.session_state.get("mi_Industrial Scale Projects", 0)
+    }
+
 def get_internal_kpis(companies_df):
     return {
         "Total Companies": len(companies_df),
@@ -14,7 +23,6 @@ def get_internal_kpis(companies_df):
         "Average Capacity per Company": companies_df["Current Capacity (t/year)"].mean(),
         "Industrial Scale Projects": (companies_df["Project Scale"].str.contains("industrial", case=False)).sum()
     }
-
 
 def show():
     st.header("📊 Analytics Dashboard")
@@ -24,7 +32,7 @@ def show():
 
     st.subheader("📌 KPI Comparison")
 
-    external_kpis = {}
+    external_kpis = load_external_kpis()
     attainment_kpis = {}
 
     for kpi in internal_kpis:
@@ -32,15 +40,15 @@ def show():
         with col1:
             st.metric(label=f"Internal: {kpi}", value=f"{internal_kpis[kpi]:,.0f}")
         with col2:
-            ext_value = st.number_input(f"External: {kpi}", min_value=0.0, value=float(internal_kpis[kpi]), step=1.0, key=f"ext_{kpi}")
-            external_kpis[kpi] = ext_value
+            ext_value = external_kpis.get(kpi, 0)
+            st.metric(label=f"External: {kpi}", value=f"{ext_value:,.0f}")
             if ext_value > 0:
                 attainment = (internal_kpis[kpi] / ext_value) * 100
                 attainment_kpis[kpi] = attainment
                 st.caption(f"🎯 Attainment: {attainment:.1f}%")
 
     st.markdown("---")
-    
+
     st.subheader("📚 Patents per Company (Pareto Chart)")
 
     search_keywords = st.text_input("🔎 Filter patents by keyword (comma separated):")
