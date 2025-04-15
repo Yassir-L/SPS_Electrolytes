@@ -10,8 +10,14 @@ KPI_SHEET = "Market Intelligence"
 def load_external_kpis_dict():
     try:
         df = pd.read_excel(EXCEL_PATH, sheet_name=KPI_SHEET)
-        return df.set_index("KPI Name").to_dict("index")
-    except:
+        st.subheader("[DEBUG] Raw External KPI Data")
+        st.write(df)  # Debug raw DataFrame
+        kpi_dict = df.set_index("KPI Name").to_dict("index")
+        st.subheader("[DEBUG] Parsed KPI Dictionary")
+        st.write(kpi_dict)  # Debug dictionary format
+        return kpi_dict
+    except Exception as e:
+        st.error(f"[DEBUG] Error loading external KPIs: {e}")
         return {}
 
 def get_internal_kpis(companies_df):
