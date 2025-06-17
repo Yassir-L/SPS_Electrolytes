@@ -13,9 +13,9 @@ st.set_page_config(layout="wide")
 
 st.sidebar.title("🔍 Navigation")
 page = st.sidebar.radio("Go to:", [
+    "Map",  # mettre Map en premier pour qu'elle soit affichée par défaut
+    "Avis d'experts",  # nouveau nom à la place de Avicenne Insights
     "Ai Support System",
-    "Avicenne Insights",
-    "Map",
     "Database Manager",
     "References",
     "Self-Assessment",
@@ -23,19 +23,18 @@ page = st.sidebar.radio("Go to:", [
     "💡 Suggestions"
 ])
 
-if page == "Ai Support System":
-    show_ai_simple()
-elif page == "Map":
+# Redirection vers les bons modules
+if page == "Map":
     show_map()
-elif page == "Avicenne Insights":
+elif page == "Ai Support System":
+    show_ai_simple()
+elif page == "Avis d'experts":  # nouveau nom utilisé ici aussi
     show_avicenne()
+elif page == "Self-Assessment":
+    show_analytics()
 elif page == "Database Manager":
     show_data_manager()
 elif page == "References":
     show_references()
-elif page == "Self-Assessment":
-    show_analytics()
-elif page == "Market Intelligence":
-    show_market_intel()
 elif page == "💡 Suggestions":
     show_ideas()
