@@ -6,7 +6,8 @@ from modules.data_loader import load_data
 import json
 import os
 
-# Initialize OpenAI
+# Load API key securely from environment variable
+api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 SAVE_FILE = "saved_responses.json"
 
