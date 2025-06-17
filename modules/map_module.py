@@ -73,9 +73,16 @@ def show():
                 popup=folium.Popup(html_popup, max_width=250)
             ).add_to(m)
 
-    with st.container():
-        st_folium(m, width=700, height=500)
-        st.markdown("<div style='min-height:30px'></div>", unsafe_allow_html=True)
+    st_folium(m, width=700, height=500)
+    # Inject JavaScript workaround to force layout reflow on first load
+    st.markdown("""
+        <script>
+            window.addEventListener('load', function() {
+                window.scrollBy(0, 1);
+                window.scrollBy(0, -1);
+            });
+        </script>
+    """, unsafe_allow_html=True)
     
     # LEGEND + KPIs BLOCK
     total_companies = color_counts['red'] + color_counts['green'] + color_counts['blue']
