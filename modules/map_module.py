@@ -74,6 +74,7 @@ def show():
             ).add_to(m)
 
     st_folium(m, width=700, height=500)
+    st.empty()  # buffer to prevent layout shift glitch on first load
 
     # LEGEND + KPIs BLOCK
     total_companies = color_counts['red'] + color_counts['green'] + color_counts['blue']
