@@ -74,8 +74,9 @@ def show():
             ).add_to(m)
 
     st_folium(m, width=700, height=500)
-    st.empty()  # buffer to prevent layout shift glitch on first load
-
+    # Espace de remplissage visuel fixe pour éviter le décalage initial
+    st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
+    
     # LEGEND + KPIs BLOCK
     total_companies = color_counts['red'] + color_counts['green'] + color_counts['blue']
     total_capacity = df['Current Capacity (t/year)'].sum()
