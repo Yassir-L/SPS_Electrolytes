@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def show():
-    st.title("📘 Avicenne Market Insights: LiPF₆")
+    st.title("📘 Experts Market Insights: LiPF₆")
 
     # --------- Section 1: Global Market Summary ---------
     st.header("📊 Global LiPF₆ Market Overview (2022–2024)")
