@@ -15,11 +15,10 @@ st.sidebar.title("🔍 Navigation")
 page = st.sidebar.radio("Go to:", [
     "Map",  # mettre Map en premier pour qu'elle soit affichée par défaut
     "Avis d'experts",  # nouveau nom à la place de Avicenne Insights
+    "Self-Assessment",
     "Ai Support System",
     "Database Manager",
     "References",
-    "Self-Assessment",
-    "Market Intelligence",
     "💡 Suggestions"
 ])
 
