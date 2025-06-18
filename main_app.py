@@ -7,14 +7,16 @@ from modules.market_intelligence_module import show as show_market_intel
 from modules.ideas_module import show as show_ideas
 from modules.ai_single_question import show as show_ai_simple
 from modules.avicenne_module import show as show_avicenne
+from modules.home_module import show as show_home
 
 
 st.set_page_config(layout="wide")
 
 st.sidebar.title("🔍 Navigation")
 page = st.sidebar.radio("Go to:", [
-    "Map",  # mettre Map en premier pour qu'elle soit affichée par défaut
-    "Avis d'experts",  # nouveau nom à la place de Avicenne Insights
+    "🏠 Accueil", 
+    "Map",  
+    "Avis d'experts", 
     "Self-Assessment",
     "Ai Support System",
     "Database Manager",
@@ -23,7 +25,9 @@ page = st.sidebar.radio("Go to:", [
 ])
 
 # Redirection vers les bons modules
-if page == "Map":
+if page == "🏠 Accueil":
+    show_home()
+elif page == "Map":
     show_map()
 elif page == "Ai Support System":
     show_ai_simple()
